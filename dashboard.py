@@ -119,7 +119,16 @@ if show_baseline:
 if show_anomalies and not sub_alerts.empty:
     # Match dates to actual metric values for plotting
     merged_alerts = pd.merge(sub_alerts, sub[["date", metric]], on="date", how="inner")
-    
+    # Fix date type mismatch before merging
+sub["date"] = pd.to_datetime(sub["date"], errors="coerce")
+
+if not sub_alerts.empty and "date" in sub_alerts.columns:
+    sub_alerts["date"] = pd.to_datetime(
+        sub_alerts["date"], errors="coerce"
+    )
+    sub_alerts = sub_alerts.dropna(subset=["date"])
+
+sub = sub.dropna(subset=["date"])
     # Critical markers
     crit = merged_alerts[merged_alerts["severity"] == "CRITICAL"]
     if not crit.empty:
